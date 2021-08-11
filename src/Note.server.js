@@ -11,15 +11,19 @@ import {readFile} from 'react-fs';
 import {format} from 'date-fns';
 import path from 'path';
 
+import {db} from './db.server';
 import NotePreview from './NotePreview';
 import EditButton from './EditButton.client';
 import NoteEditor from './NoteEditor.client';
 
 export default function Note({selectedId, isEditing}) {
-  const note =
-    selectedId != null
-      ? fetch(`http://localhost:4000/notes/${selectedId}`).json()
-      : null;
+  let note = null;
+  if (selectedId !== null) {
+    note = db.query(
+      `select * from notes where id = $1`,
+      [selectedId]
+    ).rows[0];
+  }
 
   if (note === null) {
     if (isEditing) {
