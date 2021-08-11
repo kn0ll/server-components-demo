@@ -13,7 +13,8 @@ import NotePreview from './NotePreview';
 import {useRefresh} from './Cache.client';
 import {useLocation} from './LocationContext.client';
 
-export default function NoteEditor({noteId, initialTitle, initialBody}) {
+export default function NoteEditor({noteId, initialTitle, initialBody, testDeleteNote}) {
+  console.log('xxxx', testDeleteNote);
   const refresh = useRefresh();
   const [title, setTitle] = useState(initialTitle);
   const [body, setBody] = useState(initialBody);
@@ -23,6 +24,7 @@ export default function NoteEditor({noteId, initialTitle, initialBody}) {
     endpoint: noteId !== null ? `/notes/${noteId}` : `/notes`,
     method: noteId !== null ? 'PUT' : 'POST',
   });
+  // const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleting, deleteNote] = useMutation({
     endpoint: `/notes/${noteId}`,
     method: 'DELETE',
@@ -46,7 +48,9 @@ export default function NoteEditor({noteId, initialTitle, initialBody}) {
       isEditing: false,
       searchText: location.searchText,
     };
+    // setIsDeleting(true);
     const response = await deleteNote(payload, requestedLocation);
+    // setIsDeleting(false);
     navigate(response);
   }
 

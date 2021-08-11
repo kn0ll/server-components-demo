@@ -28,7 +28,12 @@ export default function Note({selectedId, isEditing}) {
   if (note === null) {
     if (isEditing) {
       return (
-        <NoteEditor noteId={null} initialTitle="Untitled" initialBody="" />
+        <NoteEditor
+          noteId={null}
+          initialTitle="Untitled"
+          initialBody=""
+          testDeleteNote={() => 2}
+        />
       );
     } else {
       return (
@@ -51,7 +56,14 @@ export default function Note({selectedId, isEditing}) {
   // fetch('http://localhost:4000/sleep/3000');
 
   if (isEditing) {
-    return <NoteEditor noteId={id} initialTitle={title} initialBody={body} />;
+    return (
+      <NoteEditor
+        noteId={id}
+        initialTitle={title}
+        initialBody={body}
+        testDeleteNote={() => 2}
+      />
+    );
   } else {
     return (
       <div className="note">
