@@ -23,6 +23,7 @@ services:
       DB_HOST: postgres
       PORT: 4000
     volumes:
+      - ./.yalc:/opt/notes-app/.yalc
       - ./notes:/opt/notes-app/notes
       - ./public:/opt/notes-app/public
       - ./scripts:/opt/notes-app/scripts
