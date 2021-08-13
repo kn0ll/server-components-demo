@@ -24,13 +24,10 @@ const {readFileSync} = require('fs');
 const {unlink, writeFile} = require('fs').promises;
 const {pipeToNodeWritable, handleServerFunctions} = require('react-server-dom-webpack/writer');
 const path = require('path');
-const {Pool} = require('pg');
 const React = require('react');
 const {PassThrough} = require("stream");
 const ReactApp = require('../src/App.server').default;
-
-// Don't keep credentials in the source tree in a real app!
-const pool = new Pool(require('../credentials'));
+const pool = require('./pool');
 
 const PORT = process.env.PORT || 4000;
 const app = express();

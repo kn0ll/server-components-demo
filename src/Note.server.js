@@ -10,7 +10,9 @@ import {fetch} from 'react-fetch';
 import {readFile} from 'react-fs';
 import {format} from 'date-fns';
 import path from 'path';
+import fs from 'fs';
 
+import pool from '../server/pool';
 import {db} from './db.server';
 import NotePreview from './NotePreview';
 import EditButton from './EditButton.client';
@@ -60,20 +62,13 @@ export default function Note({selectedId, isEditing}) {
         noteId={id}
         initialTitle={title}
         initialBody={body}
-        deleteNote={(...args) => {
+        deleteNote={() => {
           return new Promise((resolve) => {
-            // handleErrors(async function(req, res) {
-            //   await pool.query('delete from notes where id = $1', [req.params.id]);
-            //   await unlink(path.resolve(NOTES_PATH, `${req.params.id}.md`));
-            //   sendResponse(req, res, null);
-            // })
-            // pool.query('delete from notes where id = $1', [id]).then(
-            //   unlink(path.resolve(NOTES_PATH, `${id}.md`)).then(
-            //     resolve({ test: 'hello world :)')
-            //   )
-            // )
-            console.log('deleting note with args', args);
-            (new Promise((r) => setTimeout(() => r(), 2400))).then(() => resolve({ test: "hello world :)" }))
+            pool.query('delete from notes where id = $1', [id]).then(
+              fs.promises.unlink(path.resolve(path.resolve(__dirname, '../notes'), `${id}.md`)).then(
+                resolve({test: 'hello world :)'})
+              )
+            )
           })
         }}
       />
