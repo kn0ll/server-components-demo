@@ -40,6 +40,14 @@ how to solve "do side effect (like db.insert()) on server component", while abst
     - find the part of code that converts $1 to a symbol when it receives a prop
     - instead of `if ($1) return symbol 1` we do `if (!4) return some custom function that hits the api of C4`
 
+  - one difficult question is how to invalidate the server function cache. i think we need at LEAST client presence for that?
+
+  - cool things to do one day:
+    - streaming results down from a server fn (a generator server function?)
+    - streaming input up to a server fn (a generator server function?)
+    - setting up "client functions" - functions the client can set up that the server can invkoe
+    - this all above would enable the ability for 1 client to create a function, and have another client execute it
+
 # React Server Components Demo
 
 - [My Notes](#my-notes)

@@ -111,11 +111,7 @@ export default function App({selectedId, isEditing, searchText}) {
           <strong>React Notes</strong>
         </section>
         <section className="sidebar-menu" role="menubar">
-          <SearchField
-            testFunction={() => {
-              console.log('hello world :|');
-            }}
-          />
+          <SearchField />
           <EditButton noteId={null}>New</EditButton>
         </section>
         <nav>

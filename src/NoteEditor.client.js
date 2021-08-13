@@ -13,7 +13,7 @@ import NotePreview from './NotePreview';
 import {useRefresh} from './Cache.client';
 import {useLocation} from './LocationContext.client';
 
-export default function NoteEditor({noteId, initialTitle, initialBody, testDeleteNote}) {
+export default function NoteEditor({noteId, initialTitle, initialBody, deleteNote}) {
   const refresh = useRefresh();
   const [title, setTitle] = useState(initialTitle);
   const [body, setBody] = useState(initialBody);
@@ -23,11 +23,7 @@ export default function NoteEditor({noteId, initialTitle, initialBody, testDelet
     endpoint: noteId !== null ? `/notes/${noteId}` : `/notes`,
     method: noteId !== null ? 'PUT' : 'POST',
   });
-  // const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeleting, deleteNote] = useMutation({
-    endpoint: `/notes/${noteId}`,
-    method: 'DELETE',
-  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleSave() {
     const payload = {title, body};
@@ -40,19 +36,6 @@ export default function NoteEditor({noteId, initialTitle, initialBody, testDelet
     navigate(response);
   }
 
-  async function handleDelete() {
-    const payload = {};
-    const requestedLocation = {
-      selectedId: null,
-      isEditing: false,
-      searchText: location.searchText,
-    };
-    // setIsDeleting(true);
-    const response = await deleteNote(payload, requestedLocation);
-    // setIsDeleting(false);
-    navigate(response);
-  }
-
   function navigate(response) {
     const cacheKey = response.headers.get('X-Location');
     const nextLocation = JSON.parse(cacheKey);
@@ -62,6 +45,15 @@ export default function NoteEditor({noteId, initialTitle, initialBody, testDelet
       setLocation(nextLocation);
     });
   }
+
+  // async function handleDelete() {
+  //   const response = await deleteNote({}, {
+  //     selectedId: null,
+  //     isEditing: false,
+  //     searchText: location.searchText,
+  //   });
+  //   navigate(response);
+  // }
 
   const isDraft = noteId === null;
   return (
@@ -112,7 +104,12 @@ export default function NoteEditor({noteId, initialTitle, initialBody, testDelet
             <button
               className="note-editor-delete"
               disabled={isDeleting || isNavigating}
-              onClick={() => handleDelete()}
+              onClick={async () => {
+                setIsDeleting(true);
+                const res = await deleteNote()
+                console.log('delete res is', res);
+                setIsDeleting(false);
+              }}
               role="menuitem">
               <img
                 src="cross.svg"

@@ -60,6 +60,17 @@ export default function Note({selectedId, isEditing}) {
         noteId={id}
         initialTitle={title}
         initialBody={body}
+        deleteNote={() => {
+          return new Promise((resolve) => {
+            // handleErrors(async function(req, res) {
+            //   await pool.query('delete from notes where id = $1', [req.params.id]);
+            //   await unlink(path.resolve(NOTES_PATH, `${req.params.id}.md`));
+            //   sendResponse(req, res, null);
+            // })
+            console.log('deleting note');
+            (new Promise((r) => setTimeout(() => r(), 2400))).then(() => resolve({ test: "hello world :)" }))
+          })
+        }}
       />
     );
   } else {
