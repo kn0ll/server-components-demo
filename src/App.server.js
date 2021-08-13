@@ -112,9 +112,8 @@ export default function App({selectedId, isEditing, searchText}) {
         </section>
         <section className="sidebar-menu" role="menubar">
           <SearchField
-            testSymbol={Symbol.for('foobar')}
             testFunction={() => {
-              console.log('hello worldzr :|');
+              console.log('hello world :|');
             }}
           />
           <EditButton noteId={null}>New</EditButton>
