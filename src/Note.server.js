@@ -18,6 +18,8 @@ import NotePreview from './NotePreview';
 import EditButton from './EditButton.client';
 import NoteEditor from './NoteEditor.client';
 
+const NOTES_PATH = path.resolve(__dirname, '../notes');
+
 export default function Note({selectedId, isEditing}) {
   let note = null;
   if (selectedId !== null) {
@@ -34,6 +36,21 @@ export default function Note({selectedId, isEditing}) {
           noteId={null}
           initialTitle="Untitled"
           initialBody=""
+          saveNote={(location, { title, body }) => {
+            return new Promise((resolve) => {
+              const now = new Date();
+              pool.query(
+                'insert into notes (title, body, created_at, updated_at) values ($1, $2, $3, $3) returning id',
+                [title, body, now]
+              ).then((result) => {
+                const insertedId = result.rows[0].id;
+                fs.writeFile(path.resolve(NOTES_PATH, `${insertedId}.md`), body, 'utf8', () => {
+                  location.selectedId = insertedId;
+                  resolve(location);
+                });
+              });
+            })
+          }}
         />
       );
     } else {
@@ -65,11 +82,25 @@ export default function Note({selectedId, isEditing}) {
         deleteNote={(location) => {
           return new Promise((resolve) => {
             pool.query('delete from notes where id = $1', [id]).then(() => {
-              fs.unlink(path.resolve(path.resolve(__dirname, '../notes'), `${id}.md`), () => {
+              fs.unlink(path.resolve(NOTES_PATH, `${id}.md`), () => {
                 resolve(location)
               })
             })
           })
+        }}
+        saveNote={(location, { title, body }) => {
+          return new Promise((resolve) => {
+            const now = new Date();
+            const updatedId = Number(id);
+            pool.query(
+              'update notes set title = $1, body = $2, updated_at = $3 where id = $4',
+              [title, body, now, updatedId]
+            ).then(() => {
+              fs.writeFile(path.resolve(NOTES_PATH, `${updatedId}.md`), body, 'utf8', () => {
+                resolve(location);
+              });
+            });
+          });
         }}
       />
     );

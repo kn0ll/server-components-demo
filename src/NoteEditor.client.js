@@ -13,28 +13,28 @@ import NotePreview from './NotePreview';
 import {useRefresh} from './Cache.client';
 import {useLocation} from './LocationContext.client';
 
-export default function NoteEditor({noteId, initialTitle, initialBody, deleteNote}) {
+export default function NoteEditor({
+  noteId,
+  initialTitle,
+  initialBody,
+  deleteNote,
+  saveNote,
+}) {
+  console.log(
+    'xxx',
+    noteId,
+    initialTitle,
+    initialBody,
+    deleteNote,
+    saveNote
+  );
   const refresh = useRefresh();
   const [title, setTitle] = useState(initialTitle);
   const [body, setBody] = useState(initialBody);
   const [location, setLocation] = useLocation();
   const [isNavigating, startNavigating] = useTransition();
-  const [isSaving, saveNote] = useMutation({
-    endpoint: noteId !== null ? `/notes/${noteId}` : `/notes`,
-    method: noteId !== null ? 'PUT' : 'POST',
-  });
   const [isDeleting, setIsDeleting] = useState(false);
-
-  async function handleSave() {
-    const payload = {title, body};
-    const requestedLocation = {
-      selectedId: noteId,
-      isEditing: false,
-      searchText: location.searchText,
-    };
-    const response = await saveNote(payload, requestedLocation);
-    navigate(response);
-  }
+  const [isSaving, setIsSaving] = useState(false);
 
   function navigate(response) {
     const cacheKey = response.headers.get('X-Location');
@@ -80,7 +80,15 @@ export default function NoteEditor({noteId, initialTitle, initialBody, deleteNot
           <button
             className="note-editor-done"
             disabled={isSaving || isNavigating}
-            onClick={() => handleSave()}
+            onClick={async () => {
+              setIsSaving(true);
+              const res = await saveNote({
+                selectedId: noteId,
+                isEditing: false,
+                searchText: location.searchText,
+              }, { title, body })
+              navigate(res);
+            }}
             role="menuitem">
             <img
               src="checkmark.svg"
