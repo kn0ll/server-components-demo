@@ -48,6 +48,7 @@ how to solve "do side effect (like db.insert()) on server component", while abst
     - setting up "client functions" - functions the client can set up that the server can invkoe
     - this all above would enable the ability for 1 client to create a function, and have another client execute it
     - setState could be defined on the server and sent to the client
+    - server can only send chunks which have changed, not all chunks
 
 # React Server Components Demo
 

@@ -165,15 +165,6 @@ app.put(
   })
 );
 
-app.delete(
-  '/notes/:id',
-  handleErrors(async function(req, res) {
-    await pool.query('delete from notes where id = $1', [req.params.id]);
-    await unlink(path.resolve(NOTES_PATH, `${req.params.id}.md`));
-    sendResponse(JSON.parse(req.query.location), res, null);
-  })
-);
-
 app.get('/sleep/:ms', function(req, res) {
   setTimeout(() => {
     res.json({ok: true});

@@ -46,15 +46,6 @@ export default function NoteEditor({noteId, initialTitle, initialBody, deleteNot
     });
   }
 
-  // async function handleDelete() {
-  //   const response = await deleteNote({}, {
-  //     selectedId: null,
-  //     isEditing: false,
-  //     searchText: location.searchText,
-  //   });
-  //   navigate(response);
-  // }
-
   const isDraft = noteId === null;
   return (
     <div className="note-editor">
@@ -111,9 +102,7 @@ export default function NoteEditor({noteId, initialTitle, initialBody, deleteNot
                   isEditing: false,
                   searchText: location.searchText,
                 })
-                console.log('delete res is', res);
                 navigate(res);
-                setIsDeleting(false);
               }}
               role="menuitem">
               <img
