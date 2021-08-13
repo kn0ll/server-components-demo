@@ -6,7 +6,7 @@
  *
  */
 
-import {Suspense} from 'react';
+import React, {Suspense} from 'react';
 
 import Note from './Note.server';
 import NoteList from './NoteList.server';
@@ -78,7 +78,7 @@ export default function App({selectedId, isEditing, searchText}) {
 }
 ```
 
-These functions are actually available this time, but we get an error like "This hook is not supported in server components."
+These functions are actually available this time, but we get an error like "This Hook is not supported in Server Components."
 */
 
 /*
@@ -111,7 +111,12 @@ export default function App({selectedId, isEditing, searchText}) {
           <strong>React Notes</strong>
         </section>
         <section className="sidebar-menu" role="menubar">
-          <SearchField />
+          <SearchField
+            testSymbol={Symbol.for('foobar')}
+            testFunction={() => {
+              console.log('hello worldzr :|');
+            }}
+          />
           <EditButton noteId={null}>New</EditButton>
         </section>
         <nav>

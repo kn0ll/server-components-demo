@@ -11,7 +11,9 @@ import {useState, useTransition} from 'react';
 import {useLocation} from './LocationContext.client';
 import Spinner from './Spinner';
 
-export default function SearchField() {
+export default function SearchField({ testFunction, testSymbol }) {
+  console.log('testFunction is', testFunction);
+  console.log('testSymbol is', testSymbol);
   const [text, setText] = useState('');
   const [isSearching, startSearching] = useTransition();
   const [, setLocation] = useLocation();

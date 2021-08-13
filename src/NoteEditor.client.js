@@ -14,7 +14,6 @@ import {useRefresh} from './Cache.client';
 import {useLocation} from './LocationContext.client';
 
 export default function NoteEditor({noteId, initialTitle, initialBody, testDeleteNote}) {
-  console.log('xxxx', testDeleteNote);
   const refresh = useRefresh();
   const [title, setTitle] = useState(initialTitle);
   const [body, setBody] = useState(initialBody);

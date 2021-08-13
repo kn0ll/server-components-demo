@@ -32,7 +32,6 @@ export default function Note({selectedId, isEditing}) {
           noteId={null}
           initialTitle="Untitled"
           initialBody=""
-          testDeleteNote={() => 2}
         />
       );
     } else {
@@ -61,7 +60,6 @@ export default function Note({selectedId, isEditing}) {
         noteId={id}
         initialTitle={title}
         initialBody={body}
-        testDeleteNote={() => 2}
       />
     );
   } else {
