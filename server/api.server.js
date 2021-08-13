@@ -22,10 +22,11 @@ const express = require('express');
 const compress = require('compression');
 const {readFileSync} = require('fs');
 const {unlink, writeFile} = require('fs').promises;
-const {pipeToNodeWritable} = require('react-server-dom-webpack/writer');
+const {pipeToNodeWritable, handleServerFunctions} = require('react-server-dom-webpack/writer');
 const path = require('path');
 const {Pool} = require('pg');
 const React = require('react');
+const {PassThrough} = require("stream");
 const ReactApp = require('../src/App.server').default;
 
 // Don't keep credentials in the source tree in a real app!
@@ -93,8 +94,23 @@ async function renderReactTree(res, props) {
     'utf8'
   );
   const moduleMap = JSON.parse(manifest);
-  pipeToNodeWritable(React.createElement(ReactApp, props), res, moduleMap);
+  
+  const passThrough = new PassThrough()
+
+  passThrough
+    // .on('data', (c) => console.log('got chunk', c.toString()))
+    .pipe(res);
+
+  pipeToNodeWritable(
+    React.createElement(ReactApp, props),
+    passThrough,
+    moduleMap
+  );
 }
+
+// setInterval(() => {
+//   console.log(serverFunctionCache)
+// }, 2000)
 
 function sendResponse(req, res, redirectToId) {
   const location = JSON.parse(req.query.location);
@@ -108,6 +124,8 @@ function sendResponse(req, res, redirectToId) {
     searchText: location.searchText,
   });
 }
+
+app.post('/react-rpc/:fnId', handleServerFunctions)
 
 app.get('/react', function(req, res) {
   sendResponse(req, res, null);
