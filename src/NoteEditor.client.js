@@ -106,7 +106,7 @@ export default function NoteEditor({noteId, initialTitle, initialBody, deleteNot
               disabled={isDeleting || isNavigating}
               onClick={async () => {
                 setIsDeleting(true);
-                const res = await deleteNote()
+                const res = await deleteNote(noteId)
                 console.log('delete res is', res);
                 setIsDeleting(false);
               }}
