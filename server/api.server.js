@@ -26,8 +26,8 @@ const {pipeToNodeWritable, handleServerFunctions} = require('react-server-dom-we
 const path = require('path');
 const React = require('react');
 const {PassThrough} = require("stream");
-const ReactApp = require('../src/App.server').default;
 const pool = require('./pool');
+const ReactApp = require('../src/App.server').default;
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -109,8 +109,7 @@ async function renderReactTree(res, props) {
 //   console.log(serverFunctionCache)
 // }, 2000)
 
-function sendResponse(req, res, redirectToId) {
-  const location = JSON.parse(req.query.location);
+function sendResponse(location, res, redirectToId) {
   if (redirectToId) {
     location.selectedId = redirectToId;
   }
@@ -122,10 +121,10 @@ function sendResponse(req, res, redirectToId) {
   });
 }
 
-app.post('/react-rpc/:fnId', handleServerFunctions)
+app.post('/react-rpc/:fnId', handleServerFunctions(sendResponse))
 
 app.get('/react', function(req, res) {
-  sendResponse(req, res, null);
+  sendResponse(JSON.parse(req.query.location), res, null);
 });
 
 const NOTES_PATH = path.resolve(__dirname, '../notes');
@@ -144,7 +143,7 @@ app.post(
       req.body.body,
       'utf8'
     );
-    sendResponse(req, res, insertedId);
+    sendResponse(JSON.parse(req.query.location), res, insertedId);
   })
 );
 
@@ -162,7 +161,7 @@ app.put(
       req.body.body,
       'utf8'
     );
-    sendResponse(req, res, null);
+    sendResponse(JSON.parse(req.query.location), res, null);
   })
 );
 
@@ -171,7 +170,7 @@ app.delete(
   handleErrors(async function(req, res) {
     await pool.query('delete from notes where id = $1', [req.params.id]);
     await unlink(path.resolve(NOTES_PATH, `${req.params.id}.md`));
-    sendResponse(req, res, null);
+    sendResponse(JSON.parse(req.query.location), res, null);
   })
 );
 
@@ -197,3 +196,5 @@ async function waitForWebpack() {
     }
   }
 }
+
+module.exports = {pool}

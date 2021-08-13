@@ -62,12 +62,10 @@ export default function Note({selectedId, isEditing}) {
         noteId={id}
         initialTitle={title}
         initialBody={body}
-        deleteNote={() => {
-          return new Promise((resolve) => {
-            pool.query('delete from notes where id = $1', [id]).then(
-              fs.promises.unlink(path.resolve(path.resolve(__dirname, '../notes'), `${id}.md`)).then(
-                resolve({test: 'hello world :)'})
-              )
+        deleteNote={(location, render) => {
+          pool.query('delete from notes where id = $1', [id]).then(() => {
+            fs.promises.unlink(path.resolve(path.resolve(__dirname, '../notes'), `${id}.md`)).then(
+              render(location)
             )
           })
         }}

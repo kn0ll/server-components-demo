@@ -106,8 +106,13 @@ export default function NoteEditor({noteId, initialTitle, initialBody, deleteNot
               disabled={isDeleting || isNavigating}
               onClick={async () => {
                 setIsDeleting(true);
-                const res = await deleteNote(noteId)
+                const res = await deleteNote({
+                  selectedId: null,
+                  isEditing: false,
+                  searchText: location.searchText,
+                })
                 console.log('delete res is', res);
+                navigate(res);
                 setIsDeleting(false);
               }}
               role="menuitem">
