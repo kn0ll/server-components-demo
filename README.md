@@ -61,6 +61,12 @@ how to solve "do side effect (like db.insert()) on server component", while abst
       // .pipe(res);
     ```
 
+  -- TODO:
+    - add auth
+    - handle errors
+    - better placement of stuff
+    - invalidate old functions?
+
 # React Server Components Demo
 
 - [My Notes](#my-notes)

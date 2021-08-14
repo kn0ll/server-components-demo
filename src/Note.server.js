@@ -29,6 +29,22 @@ export default function Note({selectedId, isEditing}) {
     ).rows[0];
   }
 
+  const saveNote = (location, { title, body }) => {
+    return new Promise((resolve) => {
+      const now = new Date();
+      pool.query(
+        'insert into notes (title, body, created_at, updated_at) values ($1, $2, $3, $3) returning id',
+        [title, body, now]
+      ).then((result) => {
+        const insertedId = result.rows[0].id;
+        fs.writeFile(path.resolve(NOTES_PATH, `${insertedId}.md`), body, 'utf8', () => {
+          location.selectedId = insertedId;
+          resolve(location);
+        });
+      });
+    })
+  }
+
   if (note === null) {
     if (isEditing) {
       return (
@@ -36,21 +52,7 @@ export default function Note({selectedId, isEditing}) {
           noteId={null}
           initialTitle="Untitled"
           initialBody=""
-          saveNote={(location, { title, body }) => {
-            return new Promise((resolve) => {
-              const now = new Date();
-              pool.query(
-                'insert into notes (title, body, created_at, updated_at) values ($1, $2, $3, $3) returning id',
-                [title, body, now]
-              ).then((result) => {
-                const insertedId = result.rows[0].id;
-                fs.writeFile(path.resolve(NOTES_PATH, `${insertedId}.md`), body, 'utf8', () => {
-                  location.selectedId = insertedId;
-                  resolve(location);
-                });
-              });
-            })
-          }}
+          saveNote={saveNote}
         />
       );
     } else {
@@ -67,6 +69,31 @@ export default function Note({selectedId, isEditing}) {
   let {id, title, body, updated_at} = note;
   const updatedAt = new Date(updated_at);
 
+  const deleteNote = (location) => {
+    return new Promise((resolve) => {
+      pool.query('delete from notes where id = $1', [id]).then(() => {
+        fs.unlink(path.resolve(NOTES_PATH, `${id}.md`), () => {
+          resolve(location)
+        })
+      })
+    })
+  }
+
+  const updateNote = (location, { title, body }) => {
+    return new Promise((resolve) => {
+      const now = new Date();
+      const updatedId = Number(id);
+      pool.query(
+        'update notes set title = $1, body = $2, updated_at = $3 where id = $4',
+        [title, body, now, updatedId]
+      ).then(() => {
+        fs.writeFile(path.resolve(NOTES_PATH, `${updatedId}.md`), body, 'utf8', () => {
+          resolve(location);
+        });
+      });
+    });
+  }
+
   // We could also read from a file instead.
   // body = readFile(path.resolve(`./notes/${note.id}.md`), 'utf8');
 
@@ -79,29 +106,8 @@ export default function Note({selectedId, isEditing}) {
         noteId={id}
         initialTitle={title}
         initialBody={body}
-        deleteNote={(location) => {
-          return new Promise((resolve) => {
-            pool.query('delete from notes where id = $1', [id]).then(() => {
-              fs.unlink(path.resolve(NOTES_PATH, `${id}.md`), () => {
-                resolve(location)
-              })
-            })
-          })
-        }}
-        saveNote={(location, { title, body }) => {
-          return new Promise((resolve) => {
-            const now = new Date();
-            const updatedId = Number(id);
-            pool.query(
-              'update notes set title = $1, body = $2, updated_at = $3 where id = $4',
-              [title, body, now, updatedId]
-            ).then(() => {
-              fs.writeFile(path.resolve(NOTES_PATH, `${updatedId}.md`), body, 'utf8', () => {
-                resolve(location);
-              });
-            });
-          });
-        }}
+        deleteNote={deleteNote}
+        saveNote={updateNote}
       />
     );
   } else {
