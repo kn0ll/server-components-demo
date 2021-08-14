@@ -21,11 +21,9 @@ babelRegister({
 const express = require('express');
 const compress = require('compression');
 const {readFileSync} = require('fs');
-const {unlink, writeFile} = require('fs').promises;
 const {pipeToNodeWritable, handleServerFunctions} = require('react-server-dom-webpack/writer');
 const path = require('path');
 const React = require('react');
-const {PassThrough} = require("stream");
 const pool = require('./pool');
 const ReactApp = require('../src/App.server').default;
 
@@ -91,28 +89,10 @@ async function renderReactTree(res, props) {
     'utf8'
   );
   const moduleMap = JSON.parse(manifest);
-  
-  const passThrough = new PassThrough()
-
-  passThrough
-    // .on('data', (c) => console.log('got chunk', c.toString()))
-    .pipe(res);
-
-  pipeToNodeWritable(
-    React.createElement(ReactApp, props),
-    passThrough,
-    moduleMap
-  );
+  pipeToNodeWritable(React.createElement(ReactApp, props), res, moduleMap);
 }
 
-// setInterval(() => {
-//   console.log(serverFunctionCache)
-// }, 2000)
-
-function sendResponse(location, res, redirectToId) {
-  if (redirectToId) {
-    location.selectedId = redirectToId;
-  }
+function sendResponse(location, res) {
   res.set('X-Location', JSON.stringify(location));
   renderReactTree(res, {
     selectedId: location.selectedId,

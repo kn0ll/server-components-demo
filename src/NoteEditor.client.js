@@ -20,14 +20,6 @@ export default function NoteEditor({
   deleteNote,
   saveNote,
 }) {
-  console.log(
-    'xxx',
-    noteId,
-    initialTitle,
-    initialBody,
-    deleteNote,
-    saveNote
-  );
   const refresh = useRefresh();
   const [title, setTitle] = useState(initialTitle);
   const [body, setBody] = useState(initialBody);

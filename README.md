@@ -50,6 +50,17 @@ how to solve "do side effect (like db.insert()) on server component", while abst
     - setState could be defined on the server and sent to the client
     - server can only send chunks which have changed, not all chunks
 
+  - tried to set up server handler using passthrough
+    ```
+    // i wanted to set up the server function handler routes here,
+    // but the chunk is just a string. we could maybe utilize object mode stream to pass functions?
+    // but im not sure this is the right place to do it. idk
+    // const passThrough = new PassThrough()
+    // passThrough
+      // .on('data', (c) => console.log('got chunk', c.toString()))
+      // .pipe(res);
+    ```
+
 # React Server Components Demo
 
 - [My Notes](#my-notes)
