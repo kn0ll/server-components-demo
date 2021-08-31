@@ -1,88 +1,17 @@
-# My Notes
-
-how to solve "do side effect (like db.insert()) on server component", while abstracting the network protocols from the user all together via React.
-
-- react-server-dom-webpack/node-register
-  - sets up a Proxy (?)
-  - uses [require.extensions](https://nodejs.org/api/modules.html#modules_require_extensions) (deprecated) to instruct .client files to use the Proxy
-  - overrides module resolution to throw errors if .client loads a .server
-
-- react-server-dom-webpack/writer
-  - exports pipeToNodeWritable on server (the only one we use?)
-  - pipeToNodeWritable takes a ReactModel and webpackMap and creates a request via ReactFlightServer
-  - ReactFlightServer creates a request, which is responsible for converting the ReactModel to JSON
-  - pipeToNodeWritable calls startWork/performWork on the request via ReactFlightServer
-  - performWork -> retrySegment -> processModelChunk (FlightServerConfigStream) -> request.toJSON
-  - this starts pushing down the stream "model chunks", like:
-  ```
-      S1:"react.server_callback"
-      M2:{"id":"./src/SearchField.client.js","chunks":["client5"],"name":""}
-      M3:{"id":"./src/EditButton.client.js","chunks":["client1"],"name":""}
-      S4:"react.suspense"
-      J0:["$","div",null,{"className":"main","testProp":{"$$typeof":"$1","path":"/someuuid"},"children":[["$","section",null,{"className":"col sidebar","children":[["$","section",null,{"className":"sidebar-header","children":[["$","img",null,{"className":"logo","src":"logo.svg","width":"22px","height":"20px","alt":"","role":"presentation"}],["$","strong",null,{"children":"React Notes"}]]}],["$","section",null,{"className":"sidebar-menu","role":"menubar","children":[["$","@2",null,{}],["$","@3",null,{"noteId":null,"children":"New"}]]}],["$","nav",null,{"children":["$","$4",null,{"fallback":["$","div",null,{"children":["$","ul",null,{"className":"notes-list skeleton-container","children":[["$","li",null,{"className":"v-stack","children":["$","div",null,{"className":"sidebar-note-list-item skeleton","style":{"height":"5em"}}]}],["$","li",null,{"className":"v-stack","children":["$","div",null,{"className":"sidebar-note-list-item skeleton","style":{"height":"5em"}}]}],["$","li",null,{"className":"v-stack","children":["$","div",null,{"className":"sidebar-note-list-item skeleton","style":{"height":"5em"}}]}]]}]}],"children":"@5"}]}]]}],["$","section","null",{"className":"col note-viewer","children":["$","$4",null,{"fallback":["$","div",null,{"className":"note skeleton-container","role":"progressbar","aria-busy":"true","children":[["$","div",null,{"className":"note-header","children":[["$","div",null,{"className":"note-title skeleton","style":{"height":"3rem","width":"65%","marginInline":"12px 1em"}}],["$","div",null,{"className":"skeleton skeleton--button","style":{"width":"8em","height":"2.5em"}}]]}],["$","div",null,{"className":"note-preview","children":[["$","div",null,{"className":"skeleton v-stack","style":{"height":"1.5em"}}],["$","div",null,{"className":"skeleton v-stack","style":{"height":"1.5em"}}],["$","div",null,{"className":"skeleton v-stack","style":{"height":"1.5em"}}],["$","div",null,{"className":"skeleton v-stack","style":{"height":"1.5em"}}],["$","div",null,{"className":"skeleton v-stack","style":{"height":"1.5em"}}]]}]]}],"children":["$","div",null,{"className":"note--empty-state","children":["$","span",null,{"className":"note-text--empty-state","children":"Click a note on the left to view something! 🥺"}]}]}]}]]}]
-      M6:{"id":"./src/SidebarNote.client.js","chunks":["client6"],"name":""}
-  ```
-
-  - note @2 seems to point to M2 and $1 seems to poin to S1.  (see serializeByRefID, serializeByValueID)
-  - S1 came from App.server.js at the moment
-  - i think what we do next is
-    - first thought is we can keep passing in the prop like `{$$typeof: callbacksymbol}`... but can we do better?
-    - can we create a new chunk type, like `C`, that represents a server endpoint? and any functions passed to client components would get this (but only client components). `E4:"/some-to-some-event-source`
-      so instead of getting `testProp":{"$$typeof":"$1","path":"/someuuid"}` could we get `"testProp": "!4"` pointing to `C4`? this is useful because components may update but references to callbacks might not change (but they also might change, too).
-        - random: (we're gonna need some sort of auth here LOL... can't create an unauthenticated endpoint for a specific endpoint for a client. (or can we? maybe said fn should require a token (can we abstract this token requirement from the developer, too? feels like we have to. too easy for a developer to do something stupid. maybe we need to pass down a chunk like `T` for token? (or a simple cookie?))))
-        - NVM: random: but if we just have `"testProp": "!4"` ... if the user actually tries to enter `!4` as a prop this might cause problems... NVM! React already does this with symbols! it handles it by escaping props on the server before streaming via `escapeStringValue`. so if you try to pass "$2" it will stream "$$2"
-  - so maybe `C4` is 
-    ```
-    C4: "/someuuid"
-    ["$","div",null,{"testProp":"!4"}]
-    ```
-  - once we have chunk `C4` streamed to the client...
-    - find the part of code that converts $1 to a symbol when it receives a prop
-    - instead of `if ($1) return symbol 1` we do `if (!4) return some custom function that hits the api of C4`
-
-  - one difficult question is how to invalidate the server function cache. i think we need at LEAST client presence for that?
-
-  - cool things to do one day:
-    - streaming results down from a server fn (a generator server function?)
-    - streaming input up to a server fn (a generator server function?)
-    - setting up "client functions" - functions the client can set up that the server can invkoe
-    - this all above would enable the ability for 1 client to create a function, and have another client execute it
-    - setState could be defined on the server and sent to the client
-    - server can only send chunks which have changed, not all chunks
-
-  - tried to set up server handler using passthrough
-    ```
-    // i wanted to set up the server function handler routes here,
-    // but the chunk is just a string. we could maybe utilize object mode stream to pass functions?
-    // but im not sure this is the right place to do it. idk
-    // const passThrough = new PassThrough()
-    // passThrough
-      // .on('data', (c) => console.log('got chunk', c.toString()))
-      // .pipe(res);
-    ```
-
-  -- TODO:
-    - add auth
-    - handle errors
-    - better placement of stuff
-    - invalidate old functions?
-
 # React Server Components Demo
 
-- [My Notes](#my-notes)
-- [React Server Components Demo](#react-server-components-demo)
-  - [What is this?](#what-is-this)
-  - [When will I be able to use this?](#when-will-i-be-able-to-use-this)
-  - [Setup](#setup)
-  - [DB Setup](#db-setup)
-    - [Step 1. Create the Database](#step-1-create-the-database)
-    - [Step 2. Connect to the Database](#step-2-connect-to-the-database)
-    - [Step 3. Run the seed script](#step-3-run-the-seed-script)
-  - [Notes about this app](#notes-about-this-app)
-    - [Interesting things to try](#interesting-things-to-try)
-  - [Built by (A-Z)](#built-by-a-z)
-  - [Code of Conduct](#code-of-conduct)
-  - [License](#license)
+* [What is this?](#what-is-this)
+* [When will I be able to use this?](#when-will-i-be-able-to-use-this)
+* [Setup](#setup)
+* [DB Setup](#db-setup)
+  + [Step 1. Create the Database](#step-1-create-the-database)
+  + [Step 2. Connect to the Database](#step-2-connect-to-the-database)
+  + [Step 3. Run the seed script](#step-3-run-the-seed-script)
+* [Notes about this app](#notes-about-this-app)
+  + [Interesting things to try](#interesting-things-to-try)
+* [Built by (A-Z)](#built-by-a-z)
+* [Code of Conduct](#code-of-conduct)
+* [License](#license)
 
 ## What is this?
 
